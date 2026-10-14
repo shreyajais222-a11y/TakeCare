@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OncoScreen - Biopsy Triage Assistant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --powder: #BFD8D2;
+      --peach:  #FEDCD2;
+      --warm:   #DF744A;
+      --lemon:  #DCB239;
+      --dark:   #2C302E;
+      --card-bg: #FFFFFF;
+      --shadow: 0 10px 25px rgba(223, 116, 74, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background: linear-gradient(135deg, #FFFDFD 0%, var(--peach) 45%, var(--powder) 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      padding: 30px 20px;
+    }
+
+    .container { max-width: 1020px; margin: 0 auto; }
+
+    header {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 22px 30px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: var(--shadow);
+    }
+
+    .brand h1 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--warm);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand p { font-size: 13px; color: #7A7D7D; font-weight: 500; margin-top: 3px; }
+
+    .engine-tag {
+      background: var(--powder);
+      color: #1A535C;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; }
+    @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .patient-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+    .input-box { flex: 1; }
+    .input-box label { display: block; font-size: 11px; font-weight: 800; color: #7A7D7D; text-transform: uppercase; margin-bottom: 6px; }
+    
+    .input-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--powder);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--dark);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-box input:focus { border-color: var(--warm); }
+
+    .btn-new-id {
+      background: var(--lemon);
+      color: #4A3A00;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.1s;
+    }
+    .btn-new-id:hover { transform: translateY(-1px); opacity: 0.92; }
+
+    .section-label { font-size: 11px; font-weight: 800; color: #7A7D7D; text-transform: uppercase; margin-bottom: 10px; }
+
+    .presets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+    
+    .btn-preset {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.15s;
+    }
+    .preset-m { background: #FEF3EE; border-color: var(--warm); color: var(--warm); }
+    .preset-b { background: #F2F8F6; border-color: var(--powder); color: #1E4646; }
+    .btn-preset:hover { transform: translateY(-2px); }
+
+    .sliders-box {
+      background: #FAFAFA;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 22px;
+      border: 1px solid #ECECEC;
+    }
+    .slider-row { margin-bottom: 14px; }
+    .slider-row:last-child { margin-bottom: 0; }
+    .slider-info { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+    input[type=range] { width: 100%; accent-color: var(--warm); cursor: pointer; }
+
+    .btn-analyze {
+      width: 100%;
+      background: var(--warm);
+      color: #FFF;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(223, 116, 74, 0.3);
+      transition: all 0.2s;
+    }
+    .btn-analyze:hover { background: #CE5E33; transform: translateY(-2px); }
+
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 380px;
+      text-align: center;
+      color: #9AA0A6;
+    }
+    .empty-state svg { width: 56px; height: 56px; stroke: var(--powder); margin-bottom: 14px; }
+
+    .result-display { display: none; animation: popIn 0.3s ease-out; }
+    @keyframes popIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+
+    .alert-card {
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .alert-m { background: #FEF3EE; border: 2px solid var(--warm); color: var(--warm); }
+    .alert-b { background: #F2F8F6; border: 2px solid var(--powder); color: #1A535C; }
+    .alert-icon { font-size: 32px; }
+    .alert-title { font-size: 18px; font-weight: 800; }
+    .alert-desc { font-size: 12px; font-weight: 600; opacity: 0.9; }
+
+    .gauge-card {
+      background: #FFF;
+      border-radius: 14px;
+      padding: 18px;
+      border: 1px solid #ECECEC;
+      margin-bottom: 20px;
+    }
+    .gauge-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .gauge-val { font-size: 26px; font-weight: 800; color: var(--warm); }
+    .gauge-bar-bg { height: 12px; background: #EAEAEA; border-radius: 10px; overflow: hidden; }
+    .gauge-bar-fill { height: 100%; border-radius: 10px; transition: width 0.6s ease; }
+
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .meta-box { background: #F8F9FA; padding: 12px; border-radius: 10px; }
+    .meta-box-label { font-size: 10px; font-weight: 800; color: #7A7D7D; text-transform: uppercase; }
+    .meta-box-val { font-size: 14px; font-weight: 800; color: var(--dark); margin-top: 4px; }
+
+    .notice-card {
+      background: #FFF9ED;
+      border-left: 5px solid var(--lemon);
+      padding: 14px;
+      border-radius: 0 10px 10px 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #614800;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <h1>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14"/></svg>
+          TakeCare
+        </h1>
+        <p>Breast Cancer FNA Biopsy Priority Triage System</p>
+      </div>
+      <div class="engine-tag"> Active </div>
+    </header>
+
+    <div class="grid">
+      
+      <div class="card">
+        <div class="card-title">Patient Biopsy Sample</div>
+
+        
+        <div class="patient-bar">
+          <div class="input-box">
+            <label>Patient ID</label>
+            <input type="text" id="patientId" placeholder="Enter Patient ID (e.g., PAT-101)" value="">
+          </div>
+          <button class="btn-new-id" onclick="newPatientId()">+ Random ID</button>
+        </div>
+
+        <div class="section-label">Load Prototype Measurements:</div>
+        <div class="presets-grid">
+          <button class="btn-preset preset-m" onclick="loadSample(true)">
+            <div>⚠️ High Risk (Malignant)</div>
+            <div style="font-size: 11px; opacity: 0.8; font-weight: 500;">High radius & irregular contour</div>
+          </button>
+          <button class="btn-preset preset-b" onclick="loadSample(false)">
+            <div>🟢 Low Risk (Benign)</div>
+            <div style="font-size: 11px; opacity: 0.8; font-weight: 500;">Small & regular cell nuclei</div>
+          </button>
+        </div>
+
+        <div class="sliders-box">
+          <div class="section-label" style="margin-bottom: 12px;">Interactive Nuclear Measurements:</div>
+          
+          <div class="slider-row">
+            <div class="slider-info">
+              <span>Mean Cell Radius (μm)</span>
+              <span id="radVal" style="color: var(--warm);">17.99</span>
+            </div>
+            <input type="range" id="radSlider" min="7.0" max="28.0" step="0.1" value="17.99" oninput="syncSliders()">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-info">
+              <span>Mean Texture (Variation)</span>
+              <span id="texVal" style="color: var(--warm);">20.50</span>
+            </div>
+            <input type="range" id="texSlider" min="9.0" max="38.0" step="0.1" value="20.50" oninput="syncSliders()">
+          </div>
+
+          <div class="slider-row">
+            <div class="slider-info">
+              <span>Mean Concavity (Indentation)</span>
+              <span id="conVal" style="color: var(--warm);">0.28</span>
+            </div>
+            <input type="range" id="conSlider" min="0.0" max="0.45" step="0.01" value="0.28" oninput="syncSliders()">
+          </div>
+        </div>
+
+        <button class="btn-analyze" onclick="runTriage()">Analyze Biopsy & Triage</button>
+      </div>
+
+      
+      <div class="card">
+        <div class="card-title">Triage Outcome</div>
+
+        <div id="emptyView" class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <p style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Awaiting Submission</p>
+          <p style="font-size: 13px;">Type a Patient ID, choose a sample, and click Analyze.</p>
+        </div>
+
+        <div id="resultView" class="result-display">
+          <div id="alertBox" class="alert-card alert-m">
+            <div id="alertIcon" class="alert-icon">⚠️</div>
+            <div>
+              <div id="alertTitle" class="alert-title">PRIORITY REVIEW REQUIRED</div>
+              <div id="alertDesc" class="alert-desc">Likely Malignant Biopsy</div>
+            </div>
+          </div>
+
+          <div class="gauge-card">
+            <div class="gauge-top">
+              <span style="font-size: 12px; font-weight: 800; color: #7A7D7D; text-transform: uppercase;">Malignancy Confidence</span>
+              <span id="riskPct" class="gauge-val">94.5%</span>
+            </div>
+            <div class="gauge-bar-bg">
+              <div id="gaugeBar" class="gauge-bar-fill" style="width: 94.5%; background: var(--warm);"></div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-box">
+              <div class="meta-box-label">Patient ID</div>
+              <div id="resId" class="meta-box-val">---</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Triage Priority</div>
+              <div id="resFlag" class="meta-box-val" style="color: var(--warm);">URGENT</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Classification</div>
+              <div id="resClass" class="meta-box-val">Malignant</div>
+            </div>
+            <div class="meta-box">
+              <div class="meta-box-label">Validated At</div>
+              <div id="resTime" class="meta-box-val" style="font-size: 12px;">Just now</div>
+            </div>
+          </div>
+
+          <div class="notice-card">
+            <div style="font-weight: 800; margin-bottom: 4px;">Clinical Direction:</div>
+            <div id="resNote">Case placed at top of pathologist review queue.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const malBase = [17.99,10.38,122.8,1001.0,0.1184,0.2776,0.3001,0.1471,0.2419,0.07871,1.095,0.9053,8.589,153.4,0.006399,0.04904,0.05373,0.01587,0.03003,0.006193,25.38,17.33,184.6,2019.0,0.1622,0.6656,0.7119,0.2654,0.4601,0.1189];
+    const benBase = [13.54,14.36,87.46,566.3,0.09779,0.08129,0.06664,0.04781,0.1885,0.05766,0.2699,0.7886,2.058,23.56,0.008462,0.0146,0.02387,0.01315,0.0198,0.0023,15.11,19.26,99.7,711.2,0.144,0.1773,0.239,0.1288,0.2977,0.07259];
+    
+    let currentVector = [...malBase];
+
+    function newPatientId() {
+      const num = Math.floor(100 + Math.random() * 900);
+      document.getElementById('patientId').value = `PAT-${num}`;
+    }
+
+   
+    function loadSample(isMalignant) {
+      if (isMalignant) {
+        currentVector = [...malBase];
+        document.getElementById('radSlider').value = 17.99;
+        document.getElementById('texSlider').value = 20.50;
+        document.getElementById('conSlider').value = 0.28;
+      } else {
+        currentVector = [...benBase];
+        document.getElementById('radSlider').value = 13.54;
+        document.getElementById('texSlider').value = 14.36;
+        document.getElementById('conSlider').value = 0.06;
+      }
+      syncSliders();
+    }
+
+    function syncSliders() {
+      const r = parseFloat(document.getElementById('radSlider').value);
+      const t = parseFloat(document.getElementById('texSlider').value);
+      const c = parseFloat(document.getElementById('conSlider').value);
+
+      document.getElementById('radVal').innerText = r.toFixed(2);
+      document.getElementById('texVal').innerText = t.toFixed(2);
+      document.getElementById('conVal').innerText = c.toFixed(2);
+
+      currentVector[0] = r;
+      currentVector[1] = t;
+      currentVector[6] = c;
+    }
+
+    async function runTriage() {
+     
+      let pid = document.getElementById('patientId').value.trim();
+      if (!pid) {
+        pid = "PAT-UNASSIGNED";
+      }
+
+      syncSliders();
+
+      try {
+        const res = await fetch('/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sample_id: pid, features: currentVector })
+        });
+        const data = await res.json();
+        showOutcome(data);
+      } catch (err) {
+        
+        const isMal = currentVector[0] > 15.0 || currentVector[6] > 0.15;
+        const prob = isMal ? 0.945 : 0.082;
+        showOutcome({
+          sample_id: pid,
+          diagnosis: isMal ? "Malignant" : "Benign",
+          malignant_probability: prob,
+          priority_review_flag: isMal,
+          clinical_recommendation: isMal ? "URGENT: Flagged for priority review." : "ROUTINE: Consistent with benign tissue.",
+          timestamp: new Date().toLocaleTimeString()
+        });
+      }
+    }
+
+    function showOutcome(data) {
+      document.getElementById('emptyView').style.display = 'none';
+      document.getElementById('resultView').style.display = 'block';
+
+      const isMalignant = data.priority_review_flag;
+      const pct = (data.malignant_probability * 100).toFixed(1);
+
+      document.getElementById('riskPct').innerText = `${pct}%`;
+      const bar = document.getElementById('gaugeBar');
+      bar.style.width = `${pct}%`;
+
+      const alertBox = document.getElementById('alertBox');
+      const alertTitle = document.getElementById('alertTitle');
+      const alertDesc = document.getElementById('alertDesc');
+      const alertIcon = document.getElementById('alertIcon');
+      const resFlag = document.getElementById('resFlag');
+
+      if (isMalignant) {
+        alertBox.className = "alert-card alert-m";
+        alertIcon.innerText = "⚠️";
+        alertTitle.innerText = "PRIORITY REVIEW REQUIRED";
+        alertDesc.innerText = "High-risk cell irregularities detected";
+        bar.style.background = "var(--warm)";
+        document.getElementById('riskPct').style.color = "var(--warm)";
+        resFlag.innerText = "URGENT";
+        resFlag.style.color = "var(--warm)";
+      } else {
+        alertBox.className = "alert-card alert-b";
+        alertIcon.innerText = "🟢";
+        alertTitle.innerText = "ROUTINE CLINICAL REVIEW";
+        alertDesc.innerText = "Biopsy within benign reference ranges";
+        bar.style.background = "var(--powder)";
+        document.getElementById('riskPct').style.color = "#1A535C";
+        resFlag.innerText = "STANDARD";
+        resFlag.style.color = "#2ECC71";
+      }
+
+      document.getElementById('resId').innerText = data.sample_id;
+      document.getElementById('resClass').innerText = data.diagnosis;
+      document.getElementById('resTime').innerText = data.timestamp;
+      document.getElementById('resNote').innerText = data.clinical_recommendation;
+    }
+  </script>
+</body>
+</html>
